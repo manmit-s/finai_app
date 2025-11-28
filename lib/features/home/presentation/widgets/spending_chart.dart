@@ -32,7 +32,7 @@ class SpendingChart extends StatelessWidget {
                     children: [
                       // Amount label
                       Text(
-                        '\$${category.amount.toStringAsFixed(0)}',
+                        '${category.currencySymbol}${category.amount.toStringAsFixed(0)}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -89,11 +89,13 @@ class CategorySpending {
   final double amount;
   final IconData icon;
   final Color color;
+  final String currencySymbol;
 
   CategorySpending({
     required this.name,
     required this.amount,
     required this.icon,
     required this.color,
+    this.currencySymbol = '\$',
   });
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:finai/theme/app_theme.dart';
 import 'package:finai/widgets/bottom_nav_scaffold.dart';
+import 'package:provider/provider.dart';
+import 'package:finai/providers/user_data.dart';
 
 /// Main entry point for the FinAI app
 /// An AI-powered personal finance advisor
@@ -24,13 +26,16 @@ class FinAIApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FinAI - Smart Finance',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: const BottomNavScaffold(),
+    return ChangeNotifierProvider(
+      create: (context) => UserData(),
+      child: MaterialApp(
+        title: 'FinAI - Smart Finance',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        home: const BottomNavScaffold(),
+      ),
     );
   }
 }

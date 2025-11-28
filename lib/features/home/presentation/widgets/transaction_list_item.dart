@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:finai/providers/user_data.dart';
 
 /// Reusable transaction list item widget
 /// Displays transaction details with merchant, category, amount, and timestamp
 class TransactionListItem extends StatelessWidget {
   final String merchantName;
   final String category;
-  final double amount;
+  final double amountUSD;
   final DateTime timestamp;
   final bool isDebit;
   final IconData categoryIcon;
@@ -16,7 +18,7 @@ class TransactionListItem extends StatelessWidget {
     super.key,
     required this.merchantName,
     required this.category,
-    required this.amount,
+    required this.amountUSD,
     required this.timestamp,
     required this.isDebit,
     required this.categoryIcon,
@@ -94,12 +96,17 @@ class TransactionListItem extends StatelessWidget {
             ),
           ),
           // Amount
-          Text(
-            '${isDebit ? '-' : '+'}\$${amount.toStringAsFixed(2)}',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: amountColor,
-            ),
+          Consumer<UserData>(
+            builder: (context, userData, child) {
+              final convertedAmount = userData.convertFromUSD(amountUSD);
+              return Text(
+                '${isDebit ? '-' : '+'}${userData.currencySymbol}${convertedAmount.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: amountColor,
+                ),
+              );
+            },
           ),
         ],
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:finai/features/chat/presentation/widgets/chat_message_bubble.dart';
 import 'package:finai/features/chat/presentation/widgets/quick_reply_chip.dart';
+import 'package:provider/provider.dart';
+import 'package:finai/providers/user_data.dart';
 
 /// Model class for chat messages
 class ChatMessage {
@@ -99,11 +101,12 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   String _getAIResponse(String userMessage) {
+    final userData = Provider.of<UserData>(context, listen: false);
     // Simple mock responses based on keywords
     final lowerMessage = userMessage.toLowerCase();
 
     if (lowerMessage.contains('summary') || lowerMessage.contains('monthly')) {
-      return 'Your monthly summary: Total spend: \$2,450 | Savings: \$850 | Top category: Bills (\$890). You\'re on track with your budget!';
+      return 'Your monthly summary: Total spend: ${userData.formatCurrency(2450)} | Savings: ${userData.formatCurrency(850)} | Top category: Bills (${userData.formatCurrency(890)}). You\'re on track with your budget!';
     } else if (lowerMessage.contains('save') ||
         lowerMessage.contains('saving')) {
       return 'Based on your financial health score, consider starting an emergency fund. I recommend saving 20% of your income. Would you like help setting up automatic transfers?';
@@ -112,7 +115,7 @@ class _ChatPageState extends State<ChatPage> {
       return 'I haven\'t detected any suspicious transactions recently. All your transactions appear normal. I\'m monitoring your account 24/7 for any anomalies.';
     } else if (lowerMessage.contains('budget') ||
         lowerMessage.contains('limit')) {
-      return 'I can help you set spending limits! Your current food spending is \$650/month. Would you like to set a budget for this category?';
+      return 'I can help you set spending limits! Your current food spending is ${userData.formatCurrency(650)}/month. Would you like to set a budget for this category?';
     } else {
       return 'I understand you\'re asking about ${userMessage.split(' ').take(3).join(' ')}. Let me analyze your financial data and provide personalized insights.';
     }

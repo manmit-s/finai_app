@@ -3,6 +3,9 @@ import 'package:finai/features/home/presentation/widgets/financial_health_card.d
 import 'package:finai/features/home/presentation/widgets/stat_card.dart';
 import 'package:finai/features/home/presentation/widgets/spending_chart.dart';
 import 'package:finai/features/home/presentation/widgets/transaction_list_item.dart';
+import 'package:finai/features/account/presentation/account_page.dart';
+import 'package:provider/provider.dart';
+import 'package:finai/providers/user_data.dart';
 
 /// Home page - Main dashboard for the FinAI app
 /// Displays financial health score, stats, spending overview, and recent transactions
@@ -59,24 +62,34 @@ class _HomePageState extends State<HomePage>
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
-            Text(
-              'Alex',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+            Consumer<UserData>(
+              builder: (context, userData, child) => Text(
+                userData.userName,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+              ),
             ),
           ],
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              backgroundColor: Theme.of(
-                context,
-              ).colorScheme.primary.withOpacity(0.1),
-              child: Icon(
-                Icons.person,
-                color: Theme.of(context).colorScheme.primary,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AccountPage()),
+                );
+              },
+              child: CircleAvatar(
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.primary.withOpacity(0.1),
+                child: Icon(
+                  Icons.person,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
           ),
@@ -96,36 +109,41 @@ class _HomePageState extends State<HomePage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Financial Health Score Card
-                FinancialHealthCard(
-                  score: 78,
-                  status: 'Good',
-                  statusColor: Theme.of(context).colorScheme.secondary,
+                Center(
+                  child: FinancialHealthCard(
+                    //Calculated Health Score
+                    score: 78,
+                    status: 'Good',
+                    statusColor: Theme.of(context).colorScheme.secondary,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
                 // Quick Stats Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: StatCard(
-                        title: 'Total Spend',
-                        value: '\$2,450',
-                        icon: Icons.trending_down,
-                        iconColor: Theme.of(context).colorScheme.error,
-                        subtitle: 'This month',
+                Consumer<UserData>(
+                  builder: (context, userData, child) => Row(
+                    children: [
+                      Expanded(
+                        child: StatCard(
+                          title: 'Total Spend',
+                          value: userData.formatCurrency(2450),
+                          icon: Icons.trending_down,
+                          iconColor: Theme.of(context).colorScheme.error,
+                          subtitle: 'This month',
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: StatCard(
-                        title: 'Savings',
-                        value: '\$850',
-                        icon: Icons.savings_outlined,
-                        iconColor: const Color(0xFF4CAF50),
-                        subtitle: 'Surplus',
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: StatCard(
+                          title: 'Savings',
+                          value: userData.formatCurrency(850),
+                          icon: Icons.savings_outlined,
+                          iconColor: const Color(0xFF4CAF50),
+                          subtitle: 'Surplus',
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
                 StatCard(
@@ -143,42 +161,49 @@ class _HomePageState extends State<HomePage>
                   subtitle: 'Last 30 days',
                 ),
                 const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: SpendingChart(
-                      categories: [
-                        CategorySpending(
-                          name: 'Food',
-                          amount: 650,
-                          icon: Icons.restaurant,
-                          color: const Color(0xFFFF6B6B),
-                        ),
-                        CategorySpending(
-                          name: 'Bills',
-                          amount: 890,
-                          icon: Icons.receipt_long,
-                          color: const Color(0xFF4ECDC4),
-                        ),
-                        CategorySpending(
-                          name: 'Shopping',
-                          amount: 450,
-                          icon: Icons.shopping_bag,
-                          color: const Color(0xFF95E1D3),
-                        ),
-                        CategorySpending(
-                          name: 'Travel',
-                          amount: 320,
-                          icon: Icons.flight,
-                          color: const Color(0xFFFFA07A),
-                        ),
-                        CategorySpending(
-                          name: 'Others',
-                          amount: 140,
-                          icon: Icons.more_horiz,
-                          color: const Color(0xFFB8B8D1),
-                        ),
-                      ],
+                Consumer<UserData>(
+                  builder: (context, userData, child) => Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: SpendingChart(
+                        categories: [
+                          CategorySpending(
+                            name: 'Food',
+                            amount: userData.convertFromUSD(650),
+                            icon: Icons.restaurant,
+                            color: const Color(0xFFFF6B6B),
+                            currencySymbol: userData.currencySymbol,
+                          ),
+                          CategorySpending(
+                            name: 'Bills',
+                            amount: userData.convertFromUSD(890),
+                            icon: Icons.receipt_long,
+                            color: const Color(0xFF4ECDC4),
+                            currencySymbol: userData.currencySymbol,
+                          ),
+                          CategorySpending(
+                            name: 'Shopping',
+                            amount: userData.convertFromUSD(450),
+                            icon: Icons.shopping_bag,
+                            color: const Color(0xFF95E1D3),
+                            currencySymbol: userData.currencySymbol,
+                          ),
+                          CategorySpending(
+                            name: 'Travel',
+                            amount: userData.convertFromUSD(320),
+                            icon: Icons.flight,
+                            color: const Color(0xFFFFA07A),
+                            currencySymbol: userData.currencySymbol,
+                          ),
+                          CategorySpending(
+                            name: 'Others',
+                            amount: userData.convertFromUSD(140),
+                            icon: Icons.more_horiz,
+                            color: const Color(0xFFB8B8D1),
+                            currencySymbol: userData.currencySymbol,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -245,69 +270,71 @@ class _HomePageState extends State<HomePage>
                   },
                 ),
                 const SizedBox(height: 12),
-                Card(
-                  child: Column(
-                    children: [
-                      TransactionListItem(
-                        merchantName: 'Starbucks Coffee',
-                        category: 'Food',
-                        amount: 12.50,
-                        timestamp: DateTime.now().subtract(
-                          const Duration(hours: 2),
+                Consumer<UserData>(
+                  builder: (context, userData, child) => Card(
+                    child: Column(
+                      children: [
+                        TransactionListItem(
+                          merchantName: 'Starbucks Coffee',
+                          category: 'Food',
+                          amountUSD: 12.50,
+                          timestamp: DateTime.now().subtract(
+                            const Duration(hours: 2),
+                          ),
+                          isDebit: true,
+                          categoryIcon: Icons.restaurant,
+                          categoryColor: const Color(0xFFFF6B6B),
                         ),
-                        isDebit: true,
-                        categoryIcon: Icons.restaurant,
-                        categoryColor: const Color(0xFFFF6B6B),
-                      ),
-                      const Divider(height: 1),
-                      TransactionListItem(
-                        merchantName: 'Netflix Subscription',
-                        category: 'Bills',
-                        amount: 15.99,
-                        timestamp: DateTime.now().subtract(
-                          const Duration(days: 1),
+                        const Divider(height: 1),
+                        TransactionListItem(
+                          merchantName: 'Netflix Subscription',
+                          category: 'Bills',
+                          amountUSD: 15.99,
+                          timestamp: DateTime.now().subtract(
+                            const Duration(days: 1),
+                          ),
+                          isDebit: true,
+                          categoryIcon: Icons.receipt_long,
+                          categoryColor: const Color(0xFF4ECDC4),
                         ),
-                        isDebit: true,
-                        categoryIcon: Icons.receipt_long,
-                        categoryColor: const Color(0xFF4ECDC4),
-                      ),
-                      const Divider(height: 1),
-                      TransactionListItem(
-                        merchantName: 'Salary Deposit',
-                        category: 'Income',
-                        amount: 3500.00,
-                        timestamp: DateTime.now().subtract(
-                          const Duration(days: 2),
+                        const Divider(height: 1),
+                        TransactionListItem(
+                          merchantName: 'Salary Deposit',
+                          category: 'Income',
+                          amountUSD: 3500.00,
+                          timestamp: DateTime.now().subtract(
+                            const Duration(days: 2),
+                          ),
+                          isDebit: false,
+                          categoryIcon: Icons.account_balance_wallet,
+                          categoryColor: const Color(0xFF4CAF50),
                         ),
-                        isDebit: false,
-                        categoryIcon: Icons.account_balance_wallet,
-                        categoryColor: const Color(0xFF4CAF50),
-                      ),
-                      const Divider(height: 1),
-                      TransactionListItem(
-                        merchantName: 'Amazon Shopping',
-                        category: 'Shopping',
-                        amount: 89.99,
-                        timestamp: DateTime.now().subtract(
-                          const Duration(days: 3),
+                        const Divider(height: 1),
+                        TransactionListItem(
+                          merchantName: 'Amazon Shopping',
+                          category: 'Shopping',
+                          amountUSD: 89.99,
+                          timestamp: DateTime.now().subtract(
+                            const Duration(days: 3),
+                          ),
+                          isDebit: true,
+                          categoryIcon: Icons.shopping_bag,
+                          categoryColor: const Color(0xFF95E1D3),
                         ),
-                        isDebit: true,
-                        categoryIcon: Icons.shopping_bag,
-                        categoryColor: const Color(0xFF95E1D3),
-                      ),
-                      const Divider(height: 1),
-                      TransactionListItem(
-                        merchantName: 'Uber Ride',
-                        category: 'Travel',
-                        amount: 24.50,
-                        timestamp: DateTime.now().subtract(
-                          const Duration(days: 4),
+                        const Divider(height: 1),
+                        TransactionListItem(
+                          merchantName: 'Uber Ride',
+                          category: 'Travel',
+                          amountUSD: 24.50,
+                          timestamp: DateTime.now().subtract(
+                            const Duration(days: 4),
+                          ),
+                          isDebit: true,
+                          categoryIcon: Icons.local_taxi,
+                          categoryColor: const Color(0xFFFFA07A),
                         ),
-                        isDebit: true,
-                        categoryIcon: Icons.local_taxi,
-                        categoryColor: const Color(0xFFFFA07A),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
