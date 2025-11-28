@@ -406,7 +406,8 @@ class _AccountPageState extends State<AccountPage> {
                     builder: (context, userData, child) => _SettingsTile(
                       icon: Icons.attach_money_outlined,
                       title: 'Currency',
-                      subtitle: '${userData.currency.name} (${userData.currency.symbol})',
+                      subtitle:
+                          '${userData.currency.name} (${userData.currency.symbol})',
                       onTap: _showCurrencyDialog,
                     ),
                   ),

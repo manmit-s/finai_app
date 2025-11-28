@@ -4,6 +4,7 @@ import 'package:finai/features/home/presentation/widgets/stat_card.dart';
 import 'package:finai/features/home/presentation/widgets/spending_chart.dart';
 import 'package:finai/features/home/presentation/widgets/transaction_list_item.dart';
 import 'package:finai/features/account/presentation/account_page.dart';
+import 'package:finai/features/home/presentation/all_transactions_page.dart';
 import 'package:provider/provider.dart';
 import 'package:finai/providers/user_data.dart';
 
@@ -266,7 +267,12 @@ class _HomePageState extends State<HomePage>
                   title: 'Recent Transactions',
                   actionText: 'View All',
                   onActionTap: () {
-                    // Navigate to all transactions
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AllTransactionsPage(),
+                      ),
+                    );
                   },
                 ),
                 const SizedBox(height: 12),
