@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:finai/providers/user_data.dart';
-import 'package:finai/services/auth_service.dart';
-import 'package:finai/features/auth/presentation/login_page.dart';
 
 /// Account management page
 /// Allows users to manage profile, preferences, and app settings
@@ -15,7 +13,6 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  final _authService = AuthService();
   // User profile data (in production, this would come from a backend)
   String _userName = 'Alex';
   String _email = 'alex@finai.com';
@@ -217,24 +214,14 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<void> _handleLogout() async {
-    try {
-      await _authService.signOut();
-      if (mounted) {
-        // Navigate to login page and clear all previous routes
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Logout failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    // Logout functionality removed - app doesn't require authentication
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Logout is not required for this demo app'),
+          backgroundColor: Colors.blue,
+        ),
+      );
     }
   }
 
