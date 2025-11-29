@@ -7,6 +7,7 @@ import 'package:finai/features/account/presentation/account_page.dart';
 import 'package:finai/features/home/presentation/all_transactions_page.dart';
 import 'package:provider/provider.dart';
 import 'package:finai/providers/user_data.dart';
+import 'package:finai/providers/notification_provider.dart';
 
 /// Home page - Main dashboard for the FinAI app
 /// Displays financial health score, stats, spending overview, and recent transactions
@@ -86,43 +87,46 @@ class _HomePageState extends State<HomePage>
         ),
         actions: [
           // Notification Icon for Anomaly Detection & High-Risk Transactions
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined),
-                  onPressed: () {
-                    _showNotificationsBottomSheet(context);
-                  },
-                  tooltip: 'Notifications',
-                ),
-                // Notification Badge
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: const Text(
-                      '2',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+          Consumer<NotificationProvider>(
+            builder: (context, notificationProvider, child) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined),
+                    onPressed: () {
+                      _showNotificationsBottomSheet(context);
+                    },
+                    tooltip: 'Notifications',
                   ),
-                ),
-              ],
+                  // Notification Badge
+                  if (notificationProvider.unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${notificationProvider.unreadCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           Padding(
@@ -458,15 +462,8 @@ class _NotificationsBottomSheet extends StatefulWidget {
 }
 
 class _NotificationsBottomSheetState extends State<_NotificationsBottomSheet> {
-  // Track read status for each notification
-  final List<bool> _notificationReadStatus = [true, true, false, false];
-
-  void _markAllAsRead() {
-    setState(() {
-      for (int i = 0; i < _notificationReadStatus.length; i++) {
-        _notificationReadStatus[i] = false;
-      }
-    });
+  void _markAllAsRead(BuildContext context) {
+    Provider.of<NotificationProvider>(context, listen: false).markAllAsRead();
   }
 
   @override
@@ -496,7 +493,7 @@ class _NotificationsBottomSheetState extends State<_NotificationsBottomSheet> {
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 TextButton(
-                  onPressed: _markAllAsRead,
+                  onPressed: () => _markAllAsRead(context),
                   child: const Text('Mark all read'),
                 ),
               ],
@@ -504,50 +501,46 @@ class _NotificationsBottomSheetState extends State<_NotificationsBottomSheet> {
           ),
           const Divider(height: 1),
           Expanded(
-            child: ListView(
-              controller: scrollController,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              children: [
-                _NotificationItem(
-                  icon: Icons.warning_amber_rounded,
-                  iconColor: Colors.red,
-                  title: 'Anomaly Detected',
-                  description:
-                      'Unusual spending pattern detected: \$450 spent on electronics in the last 24 hours - 3x your average daily spending.',
-                  timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-                  isUnread: _notificationReadStatus[0],
-                ),
-                const Divider(height: 1),
-                _NotificationItem(
-                  icon: Icons.error_outline,
-                  iconColor: Colors.orange.shade700,
-                  title: 'High-Risk Transaction Alert',
-                  description:
-                      'A large transaction of \$1,250 was attempted from an unusual location. Please verify if this was you.',
-                  timestamp: DateTime.now().subtract(const Duration(hours: 3)),
-                  isUnread: _notificationReadStatus[1],
-                ),
-                const Divider(height: 1),
-                _NotificationItem(
-                  icon: Icons.check_circle_outline,
-                  iconColor: Colors.green,
-                  title: 'Budget Alert Resolved',
-                  description:
-                      'You\'re back on track with your monthly budget goals.',
-                  timestamp: DateTime.now().subtract(const Duration(days: 1)),
-                  isUnread: _notificationReadStatus[2],
-                ),
-                const Divider(height: 1),
-                _NotificationItem(
-                  icon: Icons.trending_up,
-                  iconColor: Colors.blue,
-                  title: 'Savings Milestone',
-                  description:
-                      'Congratulations! You\'ve saved 20% more this month compared to last month.',
-                  timestamp: DateTime.now().subtract(const Duration(days: 2)),
-                  isUnread: _notificationReadStatus[3],
-                ),
-              ],
+            child: Consumer<NotificationProvider>(
+              builder: (context, notificationProvider, child) {
+                final notifications = notificationProvider.notifications;
+                return ListView.separated(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: notifications.length,
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final notification = notifications[index];
+                    IconData icon;
+                    Color iconColor;
+
+                    // Determine icon and color based on title
+                    if (notification.title.contains('Anomaly')) {
+                      icon = Icons.warning_amber_rounded;
+                      iconColor = Colors.red;
+                    } else if (notification.title.contains('High-Risk')) {
+                      icon = Icons.error_outline;
+                      iconColor = Colors.orange.shade700;
+                    } else if (notification.title.contains('Resolved')) {
+                      icon = Icons.check_circle_outline;
+                      iconColor = Colors.green;
+                    } else {
+                      icon = Icons.trending_up;
+                      iconColor = Colors.blue;
+                    }
+
+                    return _NotificationItem(
+                      icon: icon,
+                      iconColor: iconColor,
+                      title: notification.title,
+                      description: notification.description,
+                      timestamp: notification.timestamp,
+                      isUnread: notification.isUnread,
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],

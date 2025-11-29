@@ -4,6 +4,7 @@ import 'package:finai/theme/app_theme.dart';
 import 'package:finai/widgets/bottom_nav_scaffold.dart';
 import 'package:provider/provider.dart';
 import 'package:finai/providers/user_data.dart';
+import 'package:finai/providers/notification_provider.dart';
 
 /// Main entry point for the FinAI app
 /// An AI-powered personal finance advisor
@@ -26,8 +27,11 @@ class FinAIApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => UserData(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserData()),
+        ChangeNotifierProvider(create: (context) => NotificationProvider()),
+      ],
       child: MaterialApp(
         title: 'FinAI - Smart Finance',
         debugShowCheckedModeBanner: false,
