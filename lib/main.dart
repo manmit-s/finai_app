@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:finai/theme/app_theme.dart';
 import 'package:finai/widgets/bottom_nav_scaffold.dart';
+import 'package:finai/features/auth/presentation/login_page.dart';
 import 'package:provider/provider.dart';
 import 'package:finai/providers/user_data.dart';
 import 'package:finai/providers/notification_provider.dart';
@@ -38,7 +39,7 @@ class FinAIApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: const BottomNavScaffold(),
+        home: const LoginPage(),
       ),
     );
   }
