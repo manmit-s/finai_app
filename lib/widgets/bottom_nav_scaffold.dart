@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:finai/features/home/presentation/home_page.dart';
 import 'package:finai/features/chat/presentation/chat_page.dart';
+import 'package:finai/features/summary/presentation/summary_page.dart';
 
 /// Main scaffold with bottom navigation for the app
-/// Manages navigation between Home and AI Assistant screens
+/// Manages navigation between Home, Summary, and AI Assistant screens
 class BottomNavScaffold extends StatefulWidget {
   const BottomNavScaffold({super.key});
 
@@ -14,13 +15,13 @@ class BottomNavScaffold extends StatefulWidget {
 class _BottomNavScaffoldState extends State<BottomNavScaffold> {
   int _currentIndex = 0;
 
-  // List of pages to navigate between
-  final List<Widget> _pages = [const HomePage(), const ChatPage()];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [HomePage(), SummaryPage(), ChatPage()],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
@@ -34,6 +35,11 @@ class _BottomNavScaffoldState extends State<BottomNavScaffold> {
             icon: Icon(Icons.dashboard_outlined),
             selectedIcon: Icon(Icons.dashboard),
             label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.analytics_outlined),
+            selectedIcon: Icon(Icons.analytics),
+            label: 'Summary',
           ),
           NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),

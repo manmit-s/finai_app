@@ -491,9 +491,9 @@ class _NotificationsBottomSheetState extends State<_NotificationsBottomSheet> {
               children: [
                 Text(
                   'Notifications',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 TextButton(
                   onPressed: _markAllAsRead,
@@ -514,9 +514,7 @@ class _NotificationsBottomSheetState extends State<_NotificationsBottomSheet> {
                   title: 'Anomaly Detected',
                   description:
                       'Unusual spending pattern detected: \$450 spent on electronics in the last 24 hours - 3x your average daily spending.',
-                  timestamp: DateTime.now().subtract(
-                    const Duration(hours: 1),
-                  ),
+                  timestamp: DateTime.now().subtract(const Duration(hours: 1)),
                   isUnread: _notificationReadStatus[0],
                 ),
                 const Divider(height: 1),
@@ -526,9 +524,7 @@ class _NotificationsBottomSheetState extends State<_NotificationsBottomSheet> {
                   title: 'High-Risk Transaction Alert',
                   description:
                       'A large transaction of \$1,250 was attempted from an unusual location. Please verify if this was you.',
-                  timestamp: DateTime.now().subtract(
-                    const Duration(hours: 3),
-                  ),
+                  timestamp: DateTime.now().subtract(const Duration(hours: 3)),
                   isUnread: _notificationReadStatus[1],
                 ),
                 const Divider(height: 1),
