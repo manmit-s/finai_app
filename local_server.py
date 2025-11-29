@@ -21,7 +21,7 @@ app.add_middleware(
 )
 
 # Configure Gemini - Put your API key here
-GEMINI_API_KEY = "AIzaSyCNU4sg8KPFsUvvPAo7DQl7Zd2TPdLd0hI"  # ← Replace with your actual key
+GEMINI_API_KEY = "AIzaSyDGxP2al9gkytl2YNy0yl4Rl2su8NE3BH0"  # ← Replace with your actual key
 genai.configure(api_key=GEMINI_API_KEY)
 
 
@@ -42,15 +42,22 @@ async def root():
 @app.post("/generate")
 async def generate_finance_advice(request: GenerateRequest):
     try:
-        # Use gemini-pro model
-        model = genai.GenerativeModel('gemini-pro')
+        # Use Gemini 2.0 Flash - FASTEST model available!
+        model = genai.GenerativeModel('models/gemini-2.0-flash')
         
-        # Build prompt with context
+        # Configure for FAST responses
+        generation_config = {
+            'temperature': 0.8,
+            'top_p': 0.9,
+            'top_k': 32,
+            'max_output_tokens': 120,  # Short and fast
+        }
+        
+        # Build short prompt
         full_prompt = _build_prompt(request.prompt, request.context)
         
-        # Generate response
         print(f"📝 Prompt: {request.prompt[:50]}...")
-        response = model.generate_content(full_prompt)
+        response = model.generate_content(full_prompt, generation_config=generation_config)
         print(f"✅ Response generated successfully")
         
         return {
@@ -69,47 +76,37 @@ async def generate_finance_advice(request: GenerateRequest):
 
 
 def _build_prompt(user_prompt: str, context: Optional[Dict[str, Any]]) -> str:
-    """Build enhanced prompt with financial context"""
-    if not context:
-        return f"""You are FinAI, a helpful personal finance assistant.
-Answer this question in a friendly, concise way:
+    """Build strict finance-only prompt"""
+    
+    # Build minimal context for speed
+    context_str = ""
+    if context:
+        if 'financial_health_score' in context:
+            context_str += f"Financial Health Score: {context['financial_health_score']}/100. "
+        if 'monthly_spending' in context:
+            context_str += f"Monthly Spending: ${context['monthly_spending']}. "
+        if 'monthly_savings' in context:
+            context_str += f"Monthly Savings: ${context['monthly_savings']}. "
+    
+    return f"""You are FinAI, a personal finance advisor AI assistant. Your role is STRICTLY LIMITED to:
+- Personal finance advice (budgeting, saving, investing)
+- Spending analysis and recommendations
+- Financial health insights
+- Money management tips
+- Budget planning
 
-{user_prompt}"""
-    
-    # Build context
-    context_parts = []
-    
-    if 'user_name' in context:
-        context_parts.append(f"User: {context['user_name']}")
-    
-    if 'currency' in context:
-        context_parts.append(f"Currency: {context['currency']}")
-    
-    if 'financial_health_score' in context:
-        context_parts.append(f"Financial Health Score: {context['financial_health_score']}/100")
-    
-    if 'monthly_spending' in context:
-        context_parts.append(f"Monthly Spending: {context['monthly_spending']}")
-    
-    if 'monthly_savings' in context:
-        context_parts.append(f"Monthly Savings: {context['monthly_savings']}")
-    
-    if 'spending_by_category' in context:
-        categories = context['spending_by_category']
-        category_str = ", ".join([f"{k}: {v}" for k, v in categories.items()])
-        context_parts.append(f"Spending by Category: {category_str}")
-    
-    context_text = "\n".join(context_parts)
-    
-    return f"""You are FinAI, a helpful personal finance assistant.
+STRICT RULES:
+1. ONLY answer questions related to personal finance, money, budgeting, savings, investments, or spending
+2. If the question is NOT about finance (e.g., general knowledge, jokes, recipes, sports, etc.), respond EXACTLY with: "I'm FinAI, your personal finance assistant. I can only help with finance-related questions. Please ask me about budgeting, saving, spending, or investments."
+3. Do NOT provide information on non-finance topics under any circumstances
+4. Keep responses under 3 sentences
+5. Be helpful and friendly for finance questions only
 
-FINANCIAL CONTEXT:
-{context_text}
+User's Financial Context: {context_str if context_str else "No financial data provided."}
 
-USER QUESTION:
-{user_prompt}
+User Question: {user_prompt}
 
-Provide a helpful, personalized response based on the context. Be concise and friendly."""
+Your Response:"""
 
 
 @app.get("/health")
@@ -136,4 +133,4 @@ if __name__ == "__main__":
     print("📱 Flutter app will connect to this server")
     print("⚡ Keep this terminal open during hackathon!")
     print("-" * 50)
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

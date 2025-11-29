@@ -109,7 +109,8 @@ class _ChatPageState extends State<ChatPage> {
       setState(() {
         _messages.add(
           ChatMessage(
-            message: 'Sorry, I encountered an error: ${e.toString()}. Please try again.',
+            message:
+                'Sorry, I encountered an error: ${e.toString()}. Please try again.',
             isUser: false,
             timestamp: DateTime.now(),
           ),
@@ -146,8 +147,16 @@ class _ChatPageState extends State<ChatPage> {
       },
       'recent_transactions': [
         {'merchant': 'Starbucks Coffee', 'amount': 12.50, 'category': 'Food'},
-        {'merchant': 'Netflix Subscription', 'amount': 15.99, 'category': 'Bills'},
-        {'merchant': 'Amazon Shopping', 'amount': 89.99, 'category': 'Shopping'},
+        {
+          'merchant': 'Netflix Subscription',
+          'amount': 15.99,
+          'category': 'Bills',
+        },
+        {
+          'merchant': 'Amazon Shopping',
+          'amount': 89.99,
+          'category': 'Shopping',
+        },
       ],
       'user_name': userData.userName,
     };
@@ -254,9 +263,12 @@ class _ChatPageState extends State<ChatPage> {
                                       height: 16,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          Theme.of(context).colorScheme.primary,
-                                        ),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                            ),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -276,7 +288,7 @@ class _ChatPageState extends State<ChatPage> {
                           ),
                         );
                       }
-                      
+
                       final message = _messages[index];
                       return ChatMessageBubble(
                         message: message.message,

@@ -6,24 +6,25 @@ import 'package:finai/config/api_config.dart';
 class ApiException implements Exception {
   final String message;
   final int? statusCode;
-  
+
   ApiException(this.message, {this.statusCode});
-  
+
   @override
-  String toString() => 'ApiException: $message${statusCode != null ? ' (Status: $statusCode)' : ''}';
+  String toString() =>
+      'ApiException: $message${statusCode != null ? ' (Status: $statusCode)' : ''}';
 }
 
 /// Service class for interacting with the FinAI backend API
 class FinAIApiService {
   final http.Client _client;
-  
+
   FinAIApiService({http.Client? client}) : _client = client ?? http.Client();
-  
+
   /// Sends a prompt to the backend and returns the AI-generated response
-  /// 
+  ///
   /// [prompt] - The user's question or message
   /// [context] - Optional financial data context (e.g., spending data, account info)
-  /// 
+  ///
   /// Returns the AI-generated response as a String
   /// Throws [ApiException] if the request fails
   Future<String> sendPrompt({
@@ -36,7 +37,7 @@ class FinAIApiService {
         'prompt': prompt,
         if (context != null) 'context': context,
       };
-      
+
       // Make POST request
       final response = await _client
           .post(
@@ -45,17 +46,17 @@ class FinAIApiService {
             body: jsonEncode(body),
           )
           .timeout(ApiConfig.timeout);
-      
+
       // Parse response
       final Map<String, dynamic> responseData = jsonDecode(response.body);
-      
+
       // Handle successful response
       if (response.statusCode == 200) {
         final bool success = responseData['success'] ?? false;
-        
+
         if (success) {
           final String? aiResponse = responseData['response'];
-          
+
           if (aiResponse != null && aiResponse.isNotEmpty) {
             return aiResponse;
           } else {
@@ -82,7 +83,7 @@ class FinAIApiService {
       throw ApiException('Unexpected error: $e');
     }
   }
-  
+
   /// Disposes the HTTP client
   void dispose() {
     _client.close();
