@@ -3,6 +3,7 @@ import 'package:finai/features/chat/presentation/widgets/chat_message_bubble.dar
 import 'package:finai/features/chat/presentation/widgets/quick_reply_chip.dart';
 import 'package:provider/provider.dart';
 import 'package:finai/providers/user_data.dart';
+import 'package:finai/services/finai_api_service.dart';
 
 /// Model class for chat messages
 class ChatMessage {
@@ -30,6 +31,8 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
+  final FinAIApiService _apiService = FinAIApiService();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -57,68 +60,97 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  void _sendMessage(String text) {
+  void _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
     setState(() {
       _messages.add(
         ChatMessage(message: text, isUser: true, timestamp: DateTime.now()),
       );
+      _isLoading = true;
     });
 
     _messageController.clear();
 
     // Scroll to bottom
     Future.delayed(const Duration(milliseconds: 100), () {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    });
-
-    // Simulate AI response
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _messages.add(
-          ChatMessage(
-            message: _getAIResponse(text),
-            isUser: false,
-            timestamp: DateTime.now(),
-          ),
-        );
-      });
-
-      // Scroll to bottom after AI response
-      Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
+      }
+    });
+
+    // Get financial context from user data
+    final userData = Provider.of<UserData>(context, listen: false);
+    final financialContext = _buildFinancialContext(userData);
+
+    try {
+      // Call real API
+      final response = await _apiService.sendPrompt(
+        prompt: text,
+        context: financialContext,
+      );
+
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            message: response,
+            isUser: false,
+            timestamp: DateTime.now(),
+          ),
+        );
+        _isLoading = false;
       });
+    } catch (e) {
+      // Handle error
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            message: 'Sorry, I encountered an error: ${e.toString()}. Please try again.',
+            isUser: false,
+            timestamp: DateTime.now(),
+          ),
+        );
+        _isLoading = false;
+      });
+    }
+
+    // Scroll to bottom after AI response
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
-  String _getAIResponse(String userMessage) {
-    final userData = Provider.of<UserData>(context, listen: false);
-    // Simple mock responses based on keywords
-    final lowerMessage = userMessage.toLowerCase();
-
-    if (lowerMessage.contains('summary') || lowerMessage.contains('monthly')) {
-      return 'Your monthly summary: Total spend: ${userData.formatCurrency(2450)} | Savings: ${userData.formatCurrency(850)} | Top category: Bills (${userData.formatCurrency(890)}). You\'re on track with your budget!';
-    } else if (lowerMessage.contains('save') ||
-        lowerMessage.contains('saving')) {
-      return 'Based on your financial health score, consider starting an emergency fund. I recommend saving 20% of your income. Would you like help setting up automatic transfers?';
-    } else if (lowerMessage.contains('suspicious') ||
-        lowerMessage.contains('fraud')) {
-      return 'I haven\'t detected any suspicious transactions recently. All your transactions appear normal. I\'m monitoring your account 24/7 for any anomalies.';
-    } else if (lowerMessage.contains('budget') ||
-        lowerMessage.contains('limit')) {
-      return 'I can help you set spending limits! Your current food spending is ${userData.formatCurrency(650)}/month. Would you like to set a budget for this category?';
-    } else {
-      return 'I understand you\'re asking about ${userMessage.split(' ').take(3).join(' ')}. Let me analyze your financial data and provide personalized insights.';
-    }
+  /// Builds financial context from user data to send with API request
+  Map<String, dynamic> _buildFinancialContext(UserData userData) {
+    return {
+      'currency': userData.currencyCode,
+      'financial_health_score': 78,
+      'monthly_spending': 2450.00,
+      'monthly_savings': 850.00,
+      'spending_by_category': {
+        'Bills': 890.00,
+        'Food': 650.00,
+        'Shopping': 480.00,
+        'Travel': 220.00,
+        'Entertainment': 210.00,
+      },
+      'recent_transactions': [
+        {'merchant': 'Starbucks Coffee', 'amount': 12.50, 'category': 'Food'},
+        {'merchant': 'Netflix Subscription', 'amount': 15.99, 'category': 'Bills'},
+        {'merchant': 'Amazon Shopping', 'amount': 89.99, 'category': 'Shopping'},
+      ],
+      'user_name': userData.userName,
+    };
   }
 
   void _handleQuickReply(String message) {
@@ -130,6 +162,7 @@ class _ChatPageState extends State<ChatPage> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _apiService.dispose();
     super.dispose();
   }
 
@@ -196,8 +229,54 @@ class _ChatPageState extends State<ChatPage> {
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    itemCount: _messages.length,
+                    itemCount: _messages.length + (_isLoading ? 1 : 0),
                     itemBuilder: (context, index) {
+                      // Show loading indicator at the end
+                      if (index == _messages.length && _isLoading) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Theme.of(context).colorScheme.primary,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'FinAI is thinking...',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: Colors.grey.shade600,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      
                       final message = _messages[index];
                       return ChatMessageBubble(
                         message: message.message,
