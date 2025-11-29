@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:finai/theme/app_theme.dart';
-import 'package:finai/widgets/bottom_nav_scaffold.dart';
 import 'package:finai/features/auth/presentation/login_page.dart';
 import 'package:provider/provider.dart';
 import 'package:finai/providers/user_data.dart';
 import 'package:finai/providers/notification_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:finai/config/supabase_config.dart';
 
 /// Main entry point for the FinAI app
 /// An AI-powered personal finance advisor
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: SupabaseConfig.supabaseUrl,
+    anonKey: SupabaseConfig.supabaseAnonKey,
+  );
 
   // Configure system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(

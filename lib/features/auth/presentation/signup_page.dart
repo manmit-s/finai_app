@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:finai/widgets/bottom_nav_scaffold.dart';
+import 'package:finai/services/auth_service.dart';
 
 /// Sign up page for new user registration
 class SignUpPage extends StatefulWidget {
@@ -15,6 +15,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _authService = AuthService();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
@@ -45,17 +46,83 @@ class _SignUpPageState extends State<SignUpPage> {
         _isLoading = true;
       });
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        await _authService.signUpWithEmail(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          fullName: _nameController.text.trim(),
+        );
 
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Account created! Please check your email to verify your account.',
+              ),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 5),
+            ),
+          );
+          // Navigate back to login
+          Navigator.of(context).pop();
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Sign up failed: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _handleGoogleSignUp() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authService.signInWithGoogle();
+      // Navigation will be handled by auth state listener
+    } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google sign up failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
-        // Navigate to home page
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const BottomNavScaffold()),
+  Future<void> _handleAppleSignUp() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authService.signInWithApple();
+      // Navigation will be handled by auth state listener
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Apple sign up failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -333,9 +400,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
                   // Social Sign Up Buttons
                   OutlinedButton.icon(
-                    onPressed: () {
-                      // Handle Google sign up
-                    },
+                    onPressed: _isLoading ? null : _handleGoogleSignUp,
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       side: BorderSide(color: Colors.grey.shade300),
@@ -348,9 +413,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
-                    onPressed: () {
-                      // Handle Apple sign up
-                    },
+                    onPressed: _isLoading ? null : _handleAppleSignUp,
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       side: BorderSide(color: Colors.grey.shade300),
