@@ -98,9 +98,8 @@ class TransactionListItem extends StatelessWidget {
           // Amount
           Consumer<UserData>(
             builder: (context, userData, child) {
-              final convertedAmount = userData.convertFromUSD(amountUSD);
               return Text(
-                '${isDebit ? '-' : '+'}${userData.currencySymbol}${convertedAmount.toStringAsFixed(2)}',
+                '${isDebit ? '-' : '+'}${userData.currencySymbol}${amountUSD.toStringAsFixed(2)}',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: amountColor,

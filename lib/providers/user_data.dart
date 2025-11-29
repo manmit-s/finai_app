@@ -2,14 +2,13 @@ import 'package:flutter/foundation.dart';
 
 /// Currency enum for supported currencies
 enum Currency {
-  usd('USD', '\$', 'US Dollar', 1.0),
-  inr('INR', '₹', 'Indian Rupee', 83.0);
+  usd('USD', '\$', 'US Dollar'),
+  inr('INR', '₹', 'Indian Rupee');
 
-  const Currency(this.code, this.symbol, this.name, this.conversionRate);
+  const Currency(this.code, this.symbol, this.name);
   final String code;
   final String symbol;
   final String name;
-  final double conversionRate; // Rate relative to USD
 }
 
 /// User data provider for managing user information across the app
@@ -18,7 +17,7 @@ class UserData extends ChangeNotifier {
   String _email = 'alex@finai.com';
   String _phoneNumber = '+1 234 567 8900';
   DateTime _dateOfBirth = DateTime(1995, 5, 15);
-  Currency _currency = Currency.usd;
+  Currency _currency = Currency.inr;
 
   // Getters
   String get userName => _userName;
@@ -66,18 +65,12 @@ class UserData extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Convert amount from USD to selected currency
-  double convertFromUSD(double amountUSD) {
-    return amountUSD * _currency.conversionRate;
-  }
-
-  /// Format currency with proper symbol
-  String formatCurrency(double amountUSD, {bool showSymbol = true}) {
-    final converted = convertFromUSD(amountUSD);
+  /// Format currency with proper symbol (amounts stored in INR)
+  String formatCurrency(double amount, {bool showSymbol = true}) {
     if (showSymbol) {
-      return '${_currency.symbol}${converted.toStringAsFixed(2)}';
+      return '${_currency.symbol}${amount.toStringAsFixed(2)}';
     }
-    return converted.toStringAsFixed(2);
+    return amount.toStringAsFixed(2);
   }
 
   /// Get currency symbol

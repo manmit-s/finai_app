@@ -87,6 +87,9 @@ class _ChatPageState extends State<ChatPage> {
     final userData = Provider.of<UserData>(context, listen: false);
     final financialContext = _buildFinancialContext(userData);
 
+    // Add conversation history for context
+    financialContext['conversation_history'] = _buildConversationHistory();
+
     try {
       // Call real API
       final response = await _apiService.sendPrompt(
@@ -129,6 +132,25 @@ class _ChatPageState extends State<ChatPage> {
         );
       }
     });
+  }
+
+  /// Builds conversation history for context (last 5 messages)
+  List<Map<String, String>> _buildConversationHistory() {
+    // Skip initial bot messages, get last 10 messages (5 pairs)
+    final recentMessages = _messages.skip(2).toList();
+    final historyLimit = recentMessages.length > 10
+        ? recentMessages.length - 10
+        : 0;
+    final relevantMessages = recentMessages.skip(historyLimit).toList();
+
+    return relevantMessages
+        .map(
+          (msg) => {
+            'role': msg.isUser ? 'user' : 'assistant',
+            'content': msg.message,
+          },
+        )
+        .toList();
   }
 
   /// Builds financial context from user data to send with API request

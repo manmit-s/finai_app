@@ -76,7 +76,7 @@ async def generate_finance_advice(request: GenerateRequest):
 
 
 def _build_prompt(user_prompt: str, context: Optional[Dict[str, Any]]) -> str:
-    """Build strict finance-only prompt"""
+    """Build strict finance-only prompt with conversation history"""
     
     # Build minimal context for speed
     context_str = ""
@@ -87,6 +87,17 @@ def _build_prompt(user_prompt: str, context: Optional[Dict[str, Any]]) -> str:
             context_str += f"Monthly Spending: ${context['monthly_spending']}. "
         if 'monthly_savings' in context:
             context_str += f"Monthly Savings: ${context['monthly_savings']}. "
+    
+    # Build conversation history
+    history_str = ""
+    if context and 'conversation_history' in context:
+        history = context['conversation_history']
+        if history:
+            history_str = "\n\nPrevious Conversation:\n"
+            for msg in history[-10:]:  # Last 10 messages max
+                role = "User" if msg.get('role') == 'user' else "You"
+                content = msg.get('content', '')
+                history_str += f"{role}: {content}\n"
     
     return f"""You are FinAI, a personal finance advisor AI assistant. Your role is STRICTLY LIMITED to:
 - Personal finance advice (budgeting, saving, investing)
@@ -101,10 +112,11 @@ STRICT RULES:
 3. Do NOT provide information on non-finance topics under any circumstances
 4. Keep responses under 3 sentences
 5. Be helpful and friendly for finance questions only
+6. Remember the conversation context and provide relevant follow-up responses
 
-User's Financial Context: {context_str if context_str else "No financial data provided."}
+User's Financial Context: {context_str if context_str else "No financial data provided."}{history_str}
 
-User Question: {user_prompt}
+Current User Question: {user_prompt}
 
 Your Response:"""
 

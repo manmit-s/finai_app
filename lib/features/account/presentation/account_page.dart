@@ -144,43 +144,6 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
-  void _showCurrencyDialog() {
-    final userData = Provider.of<UserData>(context, listen: false);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Currency'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<Currency>(
-              title: const Text('US Dollar'),
-              subtitle: const Text('\$ (USD)'),
-              value: Currency.usd,
-              groupValue: userData.currency,
-              onChanged: (value) {
-                userData.updateCurrency(value!);
-                Navigator.pop(context);
-                _showSuccessSnackBar('Currency changed to USD');
-              },
-            ),
-            RadioListTile<Currency>(
-              title: const Text('Indian Rupee'),
-              subtitle: const Text('₹ (INR)'),
-              value: Currency.inr,
-              groupValue: userData.currency,
-              onChanged: (value) {
-                userData.updateCurrency(value!);
-                Navigator.pop(context);
-                _showSuccessSnackBar('Currency changed to INR');
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showThemeDialog() {
     showDialog(
       context: context,
@@ -427,14 +390,11 @@ class _AccountPageState extends State<AccountPage> {
                     },
                   ),
                   const Divider(height: 1),
-                  Consumer<UserData>(
-                    builder: (context, userData, child) => _SettingsTile(
-                      icon: Icons.attach_money_outlined,
-                      title: 'Currency',
-                      subtitle:
-                          '${userData.currency.name} (${userData.currency.symbol})',
-                      onTap: _showCurrencyDialog,
-                    ),
+                  _SettingsTile(
+                    icon: Icons.currency_rupee,
+                    title: 'Currency',
+                    subtitle: 'INR (₹)',
+                    onTap: null, // Currency fixed to INR
                   ),
                 ],
               ),

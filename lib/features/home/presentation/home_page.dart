@@ -5,9 +5,11 @@ import 'package:finai/features/home/presentation/widgets/spending_chart.dart';
 import 'package:finai/features/home/presentation/widgets/transaction_list_item.dart';
 import 'package:finai/features/account/presentation/account_page.dart';
 import 'package:finai/features/home/presentation/all_transactions_page.dart';
+import 'package:finai/features/home/presentation/bills_page.dart';
 import 'package:provider/provider.dart';
 import 'package:finai/providers/user_data.dart';
 import 'package:finai/providers/notification_provider.dart';
+import 'package:finai/providers/bill_provider.dart';
 
 /// Home page - Main dashboard for the FinAI app
 /// Displays financial health score, stats, spending overview, and recent transactions
@@ -182,7 +184,7 @@ class _HomePageState extends State<HomePage>
                       Expanded(
                         child: StatCard(
                           title: 'Total Spend',
-                          value: userData.formatCurrency(2450),
+                          value: userData.formatCurrency(18750),
                           icon: Icons.trending_down,
                           iconColor: Theme.of(context).colorScheme.error,
                           subtitle: 'This month',
@@ -192,7 +194,7 @@ class _HomePageState extends State<HomePage>
                       Expanded(
                         child: StatCard(
                           title: 'Savings',
-                          value: userData.formatCurrency(850),
+                          value: userData.formatCurrency(26500),
                           icon: Icons.savings_outlined,
                           iconColor: const Color(0xFF4CAF50),
                           subtitle: 'Surplus',
@@ -202,12 +204,24 @@ class _HomePageState extends State<HomePage>
                   ),
                 ),
                 const SizedBox(height: 12),
-                StatCard(
-                  title: 'Upcoming Bills',
-                  value: '3 bills',
-                  icon: Icons.notifications_active_outlined,
-                  iconColor: const Color(0xFFFF9800),
-                  subtitle: 'Due this week',
+                Consumer<BillProvider>(
+                  builder: (context, billProvider, child) => GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const BillsPage(),
+                        ),
+                      );
+                    },
+                    child: StatCard(
+                      title: 'Upcoming Bills',
+                      value: '${billProvider.pendingBillsCount} bills',
+                      icon: Icons.notifications_active_outlined,
+                      iconColor: const Color(0xFFFF9800),
+                      subtitle: 'Due this week',
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 32),
 
@@ -225,35 +239,35 @@ class _HomePageState extends State<HomePage>
                         categories: [
                           CategorySpending(
                             name: 'Food',
-                            amount: userData.convertFromUSD(650),
+                            amount: 8500,
                             icon: Icons.restaurant,
                             color: const Color(0xFFFF6B6B),
                             currencySymbol: userData.currencySymbol,
                           ),
                           CategorySpending(
                             name: 'Bills',
-                            amount: userData.convertFromUSD(890),
+                            amount: 3500,
                             icon: Icons.receipt_long,
                             color: const Color(0xFF4ECDC4),
                             currencySymbol: userData.currencySymbol,
                           ),
                           CategorySpending(
                             name: 'Shopping',
-                            amount: userData.convertFromUSD(450),
+                            amount: 4200,
                             icon: Icons.shopping_bag,
                             color: const Color(0xFF95E1D3),
                             currencySymbol: userData.currencySymbol,
                           ),
                           CategorySpending(
                             name: 'Travel',
-                            amount: userData.convertFromUSD(320),
+                            amount: 1850,
                             icon: Icons.flight,
                             color: const Color(0xFFFFA07A),
                             currencySymbol: userData.currencySymbol,
                           ),
                           CategorySpending(
                             name: 'Others',
-                            amount: userData.convertFromUSD(140),
+                            amount: 700,
                             icon: Icons.more_horiz,
                             color: const Color(0xFFB8B8D1),
                             currencySymbol: userData.currencySymbol,
