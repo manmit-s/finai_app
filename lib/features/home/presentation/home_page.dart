@@ -56,89 +56,7 @@ class _HomePageState extends State<HomePage>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Notifications',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Mark all as read logic
-                    },
-                    child: const Text('Mark all read'),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: ListView(
-                controller: scrollController,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                children: [
-                  _NotificationItem(
-                    icon: Icons.warning_amber_rounded,
-                    iconColor: Colors.red,
-                    title: 'Anomaly Detected',
-                    description:
-                        'Unusual spending pattern detected: \$450 spent on electronics in the last 24 hours - 3x your average daily spending.',
-                    timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-                    isUnread: true,
-                  ),
-                  const Divider(height: 1),
-                  _NotificationItem(
-                    icon: Icons.error_outline,
-                    iconColor: Colors.orange.shade700,
-                    title: 'High-Risk Transaction Alert',
-                    description:
-                        'A large transaction of \$1,250 was attempted from an unusual location. Please verify if this was you.',
-                    timestamp: DateTime.now().subtract(const Duration(hours: 3)),
-                    isUnread: true,
-                  ),
-                  const Divider(height: 1),
-                  _NotificationItem(
-                    icon: Icons.check_circle_outline,
-                    iconColor: Colors.green,
-                    title: 'Budget Alert Resolved',
-                    description:
-                        'You\'re back on track with your monthly budget goals.',
-                    timestamp: DateTime.now().subtract(const Duration(days: 1)),
-                    isUnread: false,
-                  ),
-                  const Divider(height: 1),
-                  _NotificationItem(
-                    icon: Icons.trending_up,
-                    iconColor: Colors.blue,
-                    title: 'Savings Milestone',
-                    description:
-                        'Congratulations! You\'ve saved 20% more this month compared to last month.',
-                    timestamp: DateTime.now().subtract(const Duration(days: 2)),
-                    isUnread: false,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      builder: (context) => const _NotificationsBottomSheet(),
     );
   }
 
@@ -530,6 +448,118 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+/// Stateful bottom sheet widget for notifications
+class _NotificationsBottomSheet extends StatefulWidget {
+  const _NotificationsBottomSheet();
+
+  @override
+  State<_NotificationsBottomSheet> createState() =>
+      _NotificationsBottomSheetState();
+}
+
+class _NotificationsBottomSheetState extends State<_NotificationsBottomSheet> {
+  // Track read status for each notification
+  final List<bool> _notificationReadStatus = [true, true, false, false];
+
+  void _markAllAsRead() {
+    setState(() {
+      for (int i = 0; i < _notificationReadStatus.length; i++) {
+        _notificationReadStatus[i] = false;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Notifications',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                TextButton(
+                  onPressed: _markAllAsRead,
+                  child: const Text('Mark all read'),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: ListView(
+              controller: scrollController,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: [
+                _NotificationItem(
+                  icon: Icons.warning_amber_rounded,
+                  iconColor: Colors.red,
+                  title: 'Anomaly Detected',
+                  description:
+                      'Unusual spending pattern detected: \$450 spent on electronics in the last 24 hours - 3x your average daily spending.',
+                  timestamp: DateTime.now().subtract(
+                    const Duration(hours: 1),
+                  ),
+                  isUnread: _notificationReadStatus[0],
+                ),
+                const Divider(height: 1),
+                _NotificationItem(
+                  icon: Icons.error_outline,
+                  iconColor: Colors.orange.shade700,
+                  title: 'High-Risk Transaction Alert',
+                  description:
+                      'A large transaction of \$1,250 was attempted from an unusual location. Please verify if this was you.',
+                  timestamp: DateTime.now().subtract(
+                    const Duration(hours: 3),
+                  ),
+                  isUnread: _notificationReadStatus[1],
+                ),
+                const Divider(height: 1),
+                _NotificationItem(
+                  icon: Icons.check_circle_outline,
+                  iconColor: Colors.green,
+                  title: 'Budget Alert Resolved',
+                  description:
+                      'You\'re back on track with your monthly budget goals.',
+                  timestamp: DateTime.now().subtract(const Duration(days: 1)),
+                  isUnread: _notificationReadStatus[2],
+                ),
+                const Divider(height: 1),
+                _NotificationItem(
+                  icon: Icons.trending_up,
+                  iconColor: Colors.blue,
+                  title: 'Savings Milestone',
+                  description:
+                      'Congratulations! You\'ve saved 20% more this month compared to last month.',
+                  timestamp: DateTime.now().subtract(const Duration(days: 2)),
+                  isUnread: _notificationReadStatus[3],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Notification item widget for the notifications bottom sheet
 class _NotificationItem extends StatelessWidget {
   final IconData icon;
@@ -575,11 +605,7 @@ class _NotificationItem extends StatelessWidget {
             color: iconColor.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            icon,
-            color: iconColor,
-            size: 24,
-          ),
+          child: Icon(icon, color: iconColor, size: 24),
         ),
         title: Row(
           children: [
@@ -587,8 +613,8 @@ class _NotificationItem extends StatelessWidget {
               child: Text(
                 title,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
-                    ),
+                  fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
+                ),
               ),
             ),
             if (isUnread)
@@ -608,16 +634,16 @@ class _NotificationItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               description,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
             ),
             const SizedBox(height: 4),
             Text(
               _formatTimestamp(timestamp),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey.shade500,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade500),
             ),
           ],
         ),
