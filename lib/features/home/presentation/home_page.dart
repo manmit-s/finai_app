@@ -49,6 +49,99 @@ class _HomePageState extends State<HomePage>
     return 'Good Evening';
   }
 
+  void _showNotificationsBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Notifications',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Mark all as read logic
+                    },
+                    child: const Text('Mark all read'),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView(
+                controller: scrollController,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                children: [
+                  _NotificationItem(
+                    icon: Icons.warning_amber_rounded,
+                    iconColor: Colors.red,
+                    title: 'Anomaly Detected',
+                    description:
+                        'Unusual spending pattern detected: \$450 spent on electronics in the last 24 hours - 3x your average daily spending.',
+                    timestamp: DateTime.now().subtract(const Duration(hours: 1)),
+                    isUnread: true,
+                  ),
+                  const Divider(height: 1),
+                  _NotificationItem(
+                    icon: Icons.error_outline,
+                    iconColor: Colors.orange.shade700,
+                    title: 'High-Risk Transaction Alert',
+                    description:
+                        'A large transaction of \$1,250 was attempted from an unusual location. Please verify if this was you.',
+                    timestamp: DateTime.now().subtract(const Duration(hours: 3)),
+                    isUnread: true,
+                  ),
+                  const Divider(height: 1),
+                  _NotificationItem(
+                    icon: Icons.check_circle_outline,
+                    iconColor: Colors.green,
+                    title: 'Budget Alert Resolved',
+                    description:
+                        'You\'re back on track with your monthly budget goals.',
+                    timestamp: DateTime.now().subtract(const Duration(days: 1)),
+                    isUnread: false,
+                  ),
+                  const Divider(height: 1),
+                  _NotificationItem(
+                    icon: Icons.trending_up,
+                    iconColor: Colors.blue,
+                    title: 'Savings Milestone',
+                    description:
+                        'Congratulations! You\'ve saved 20% more this month compared to last month.',
+                    timestamp: DateTime.now().subtract(const Duration(days: 2)),
+                    isUnread: false,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,6 +167,46 @@ class _HomePageState extends State<HomePage>
           ],
         ),
         actions: [
+          // Notification Icon for Anomaly Detection & High-Risk Transactions
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined),
+                  onPressed: () {
+                    _showNotificationsBottomSheet(context);
+                  },
+                  tooltip: 'Notifications',
+                ),
+                // Notification Badge
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: const Text(
+                      '2',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: GestureDetector(
@@ -393,6 +526,105 @@ class _SectionHeader extends StatelessWidget {
         if (actionText != null && onActionTap != null)
           TextButton(onPressed: onActionTap, child: Text(actionText!)),
       ],
+    );
+  }
+}
+
+/// Notification item widget for the notifications bottom sheet
+class _NotificationItem extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String description;
+  final DateTime timestamp;
+  final bool isUnread;
+
+  const _NotificationItem({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.description,
+    required this.timestamp,
+    this.isUnread = false,
+  });
+
+  String _formatTimestamp(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else {
+      return '${difference.inDays}d ago';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: isUnread
+          ? Theme.of(context).colorScheme.primary.withOpacity(0.03)
+          : null,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: iconColor,
+            size: 24,
+          ),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
+                    ),
+              ),
+            ),
+            if (isUnread)
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+              ),
+          ],
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey.shade700,
+                  ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _formatTimestamp(timestamp),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey.shade500,
+                  ),
+            ),
+          ],
+        ),
+        onTap: () {
+          // Handle notification tap - navigate to detailed view or mark as read
+        },
+      ),
     );
   }
 }
