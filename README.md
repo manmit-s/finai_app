@@ -1,16 +1,19 @@
-# finai
+# Finai App
 
-A new Flutter project.
+📱 **Finai** is a Flutter-based money-flow tracker app that lets you manually log income, lendings, borrowings, wallet cash, UPI balances, and more — without connecting to your bank.
 
-## Getting Started
+## 🚀 Why Finai?
 
-This project is a starting point for a Flutter application.
+- You control all the data manually — no automatic bank sync, no privacy worries.  
+- Designed for real-people note usage: income, lending to others, borrowing from others, wallet cash, UPI app balances.  
+- Clean, minimal UI built in Flutter for Android (and possibly iOS/web later).  
+- Perfect as a side project for learning Dart/Flutter + backend basics.
 
-A few resources to get you started if this is your first Flutter project:
+## 🧩 Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Add and categorize **Income** entries.  
+- Track **Lending**: money you’ve given to someone.  
+- Track **Borrowing**: money someone owes you.  
+- Track **Wallet cash** and **UPI app balances**.  
+- View summary of total cash flow, net assets/liabilities, lending & borrowing status.  
+- (Future) Challenge / peer-to-peer features for lending/borrowing among users.
